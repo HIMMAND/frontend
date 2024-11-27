@@ -93,15 +93,24 @@
             <div v-else>
                 <h2>Checkout</h2>
                 <ul class="list">
-                    <li v-for="(product, index) in cartItems" :key="index">
-                        <input type="checkbox" v-model="selectedCartItems" :value="product" />
-                        {{ product.subject }} - Price: {{ product.price }}
-                        <button @click="removeItem(product)" :disabled="selectedCartItems.length === 0">
+                    <li v-for="(product, index) in cartItems" :key="index" class="checkout-item">
+                        <!-- Product Image -->
+                        <img :src="product.image" alt="Product Image" class="product-image" />
+                
+                        <!-- Product Details -->
+                        <div class="product-details">
+                            <input type="checkbox" v-model="selectedCartItems" :value="product" />
+                            <span>{{ product.subject }}</span> - <span>Price: {{ product.price }}</span>
+                            <br />
+                            <span class="product-location">Location: {{ product.location }}</span>
+                        </div>
+                
+                        <!-- Remove Button -->
+                        <button @click="removeItem(product)" :disabled="selectedCartItems.length === 0" class="remove-button">
                             Remove
                         </button>
                     </li>
-                </ul>
-
+                </ul>                            
                 <p>
                     <strong>First Name:</strong>
                     <input v-model.trim="order.firstName">
