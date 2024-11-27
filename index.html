@@ -80,11 +80,11 @@
                     <span v-else-if="product.availableInventory - cartCount(product.id) < 5">
                         <strong>Only {{ product.availableInventory - cartCount(product.id) }} Left!</strong>
                     </span>
-                    <!-- Rating Display -->
+                    <!-- Rating Display
                     <div class="rating">
                         <span v-for="n in product.rating">★</span>
                         <span v-for="n in 5 - product.rating">☆</span>
-                    </div>
+                    </div> -->
 
 
                 </div>
@@ -93,24 +93,18 @@
             <div v-else>
                 <h2>Checkout</h2>
                 <ul class="list">
-                    <li v-for="(product, index) in cartItems" :key="index" class="checkout-item">
-                        <!-- Product Image -->
-                        <img :src="product.image" alt="Product Image" class="product-image" />
-                
-                        <!-- Product Details -->
-                        <div class="product-details">
-                            <input type="checkbox" v-model="selectedCartItems" :value="product" />
-                            <span>{{ product.subject }}</span> - <span>Price: {{ product.price }}</span>
-                            <br />
-                            <span class="product-location">Location: {{ product.location }}</span>
-                        </div>
-                
-                        <!-- Remove Button -->
-                        <button @click="removeItem(product)" :disabled="selectedCartItems.length === 0" class="remove-button">
+                    <li v-for="(product, index) in cartItems" :key="index">
+                        <input type="checkbox" v-model="selectedCartItems" :value="product" />
+                        <img :src="product.image" alt="Product Image" />
+                        <p>{{ product.subject }}</p>
+                        <p>Price: {{ product.price }}</p>
+                        <p class="location">Location: {{ product.location }}</p>
+                        <button @click="removeItem(product)" :disabled="selectedCartItems.length === 0">
                             Remove
                         </button>
                     </li>
-                </ul>                            
+                </ul>
+
                 <p>
                     <strong>First Name:</strong>
                     <input v-model.trim="order.firstName">
@@ -140,10 +134,10 @@
                 <p>
                     <strong>zip/postal</strong><input v-model.number="order.zip">
                 </p>
-                <p><input type="checkbox" id="gift" value="true" v-model="order.gift" v-bind:true-value="order.sendGift"
+                <!-- <p><input type="checkbox" id="gift" value="true" v-model="order.gift" v-bind:true-value="order.sendGift"
                         v-bind:false-value="order.dontSendGift">
                     <label for="gift">Ship As Gift?</label>
-                </p>
+                </p> -->
 
                 <p><input type="radio" id="home" value="Home" v-model="order.method">
                     <label for="home">Home</label>
@@ -160,7 +154,7 @@
                 <p>City:{{order.city}}</p>
                 <p>Zip:{{order.zip}}</p>
                 <p>State: {{order.state}}</p>
-                <p>Gift: {{order.gift}}</p>
+                <!-- <p>Gift: {{order.gift}}</p> -->
                 <p>Method:{{order.method}}</p>
             </div>
         </main>
@@ -251,7 +245,7 @@
                         state: this.order.state,
                         zip: this.order.zip,
                         phone: this.order.phone,
-                        gift: this.order.gift,
+                        // gift: this.order.gift,
                         method: this.order.method,
                         items: this.cartItems, // Send the full product objects
                     };
@@ -293,8 +287,8 @@
                         this.order.zip !== '' &&
                         this.order.phone !== '';
 
-                    const isShippingOrMethodSelected = this.order.gift === true ||
-                        (this.order.method === 'Home' || this.order.method === 'Business');
+                    const isShippingOrMethodSelected = this.order.method === 'Home' || this.order.method === 'Business';
+
 
                     return isPersonalInfoComplete && isShippingOrMethodSelected;
                 },
