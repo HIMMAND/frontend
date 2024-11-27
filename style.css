@@ -147,7 +147,7 @@ button:hover:not(:disabled) {
     background-color: #218838;
 }
 
-/* Improved Checkout Form Styling */
+/* Improved     out Form Styling */
 form {
     display: flex;
     flex-direction: column;
@@ -303,10 +303,6 @@ footer {
     transition: transform 0.3s ease;
 }
 
-.list li img:hover {
-    transform: scale(1.1); /* Zoom effect on hover */
-}
-
 .list li p {
     margin: 10px 0;
     font-size: 16px;
@@ -321,19 +317,22 @@ footer {
 
 .list li button {
     margin-top: 15px;
-    padding: 8px 16px;
+    padding: 5px 5px; /* Inc rease padding for a larger button */
     background-color: #ff6666;
     color: white;
     border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s ease;
+    border-radius: 8px; /* Slightly larger border radius */
+    /* cursor: pointer; */
+    font-size: 11px; /* Increase font size */
+    font-weight: bold; /* Make the text bold for better visibility */
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .list li button:hover {
     background-color: #ff4c4c;
+    transform: scale(1.05); /* Add a slight zoom effect on hover */
 }
+
 
 /* Styling for the delete button */
 .delete-button {
