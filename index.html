@@ -77,16 +77,10 @@
                     <span v-if="product.availableInventory === cartCount(product.id)">
                         <strong>All Out!</strong>
                     </span>
-                    <span v-else-if="product.availableInventory - cartCount(product.id) < 5">
-                        <strong>Only {{ product.availableInventory - cartCount(product.id) }} Left!</strong>
-                    </span>
-                    <!-- Rating Display
-                    <div class="rating">
-                        <span v-for="n in product.rating">★</span>
-                        <span v-for="n in 5 - product.rating">☆</span>
-                    </div> -->
-
-
+                    <span v-else-if="product.availableInventory < 5">
+                        <strong>Only {{ product.availableInventory }} Left!</strong>
+                    </span>                    
+                    <!-- fix this by decerementing, the available quantity to available inventory -->
                 </div>
             </div>
 
@@ -134,10 +128,6 @@
                 <p>
                     <strong>zip/postal</strong><input v-model.number="order.zip">
                 </p>
-                <!-- <p><input type="checkbox" id="gift" value="true" v-model="order.gift" v-bind:true-value="order.sendGift"
-                        v-bind:false-value="order.dontSendGift">
-                    <label for="gift">Ship As Gift?</label>
-                </p> -->
 
                 <p><input type="radio" id="home" value="Home" v-model="order.method">
                     <label for="home">Home</label>
@@ -154,7 +144,6 @@
                 <p>City:{{order.city}}</p>
                 <p>Zip:{{order.zip}}</p>
                 <p>State: {{order.state}}</p>
-                <!-- <p>Gift: {{order.gift}}</p> -->
                 <p>Method:{{order.method}}</p>
             </div>
         </main>
@@ -176,9 +165,6 @@
                     phone: '',
                     state: '',
                     zip: '',
-                    // gift: false,
-                    // sendGift: 'Send Gift',
-                    // dontSendGift: 'Do not send as gift',
                     method: ''
                 },
                 states: {
@@ -213,11 +199,13 @@
                     const existingItem = this.cart.find(item => item.id === product.id);
 
                     if (existingItem) {
-                        existingItem.quantity += 1; // Increment quantity if the product is already in the cart
+                        existingItem.quantity += 1; // Increment quantity if already in the cart
                     } else {
-                        this.cart.push({ id: product.id, quantity: 1 }); // Add a new product with quantity 1
+                        this.cart.push({ id: product.id, quantity: 1 }); // Add to cart if not already there
                     }
-                    this.selectedCartItems.push(product);
+
+                    // Decrease availableInventory directly
+                    product.availableInventory -= 1;
                 },
                 togglePage() {
                     this.showProduct = !this.showProduct; // Toggle the value of showProduct
@@ -242,10 +230,12 @@
                     const cartItem = this.cart.find(item => item.id === product.id);
 
                     if (cartItem) {
+                        product.availableInventory += 1; // Add back to availableInventory
+
                         if (cartItem.quantity > 1) {
-                            cartItem.quantity -= 1; // Decrement the quantity
+                            cartItem.quantity -= 1; // Decrease quantity in the cart
                         } else {
-                            this.cart = this.cart.filter(item => item.id !== product.id); // Remove the item if quantity is 0
+                            this.cart = this.cart.filter(item => item.id !== product.id); // Remove from cart
                         }
                     }
                 },
@@ -261,7 +251,7 @@
                         method: this.order.method,
                         items: this.cart.map(item => ({
                             id: item.id, // Product ID
-                            quantity: item.quantity // Quantity ordered
+                            quantity: parseInt(item.quantity, 10) // Quantity ordered
                         })),
                     };
 
@@ -281,16 +271,38 @@
                         .then(data => {
                             alert('Order submitted successfully!');
                             console.log('Order response:', data);
+
+                            // Update availableInventory for products in the frontend
+                            this.cart.forEach(cartItem => {
+                                const product = this.products.find(p => p.id === cartItem.id);
+                                if (product) {
+                                    product.availableInventory -= cartItem.quantity; // Decrease inventory
+                                }
+                            });
+
                             // Clear cart and form after successful order submission
                             this.cart = [];
                             this.selectedCartItems = [];
-                            this.order = {}; // Clear order details
+                            this.order = {
+                                firstName: '',
+                                lastName: '',
+                                address: '',
+                                city: '',
+                                phone: '',
+                                state: '',
+                                zip: '',
+                                method: ''
+                            };
+
+                            // Optionally refetch products from the backend to ensure consistency
+                            this.fetchProducts();
                         })
                         .catch(error => {
                             console.error('Error submitting order:', error);
                             alert('There was an error submitting your order. Please try again.');
                         });
                 }
+
             },
             computed: {
                 isFormComplete() {
@@ -304,18 +316,16 @@
 
                     const isShippingOrMethodSelected = this.order.method === 'Home' || this.order.method === 'Business';
 
-
                     return isPersonalInfoComplete && isShippingOrMethodSelected;
-                },
-                cartItems() {
-                    // Map the cart to the full product objects based on their IDs
-                    return this.cart.map(id => this.products.find(product => product.id === id));
                 },
                 cartItems() {
                     return this.cart.map(cartItem => {
                         const product = this.products.find(product => product.id === cartItem.id);
                         return { ...product, quantity: cartItem.quantity }; // Include quantity in the mapped data
                     });
+                },
+                cartItemCount() {
+                    return this.cart.reduce((total, item) => total + item.quantity, 0);
                 },
                 sortedProducts() {
                     let productsArray = this.products.slice();
@@ -348,7 +358,6 @@
             created() {
                 this.fetchProducts(); // Fetch products when Vue instance is created
             }
-
         });
     </script>
 </body>
