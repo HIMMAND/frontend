@@ -69,12 +69,12 @@
                     <p><strong>Location:</strong> {{ product.location }}</p>
                     <p><strong>Price:</strong> {{ product.price }} AED</p>
                     <p><strong>Available:</strong> {{ product.availableInventory }}</p>
-            
+
                     <!-- Add to Cart Button -->
                     <button @click="addToCart(product)" v-if="canAddToCart(product)">Add to Cart</button>
                     <button disabled="disabled" v-else>Add to Cart</button>
                 </div>
-            </div>            
+            </div>
 
             <div v-else>
                 <h2>Checkout</h2>
@@ -220,14 +220,18 @@
                 },
                 removeItem(product) {
                     const cartItem = this.cart.find(item => item.id === product.id);
-
                     if (cartItem) {
-                        product.availableInventory += 1; // Add back to availableInventory
+                        // Find the product in the main products array
+                        const productInStore = this.products.find(p => p.id === product.id);
+                        if (productInStore) {
+                            // Update the inventory in the main products array
+                            Vue.set(productInStore, 'availableInventory', productInStore.availableInventory + 1);
+                        }
 
                         if (cartItem.quantity > 1) {
-                            cartItem.quantity -= 1; // Decrease quantity in the cart
+                            cartItem.quantity -= 1;
                         } else {
-                            this.cart = this.cart.filter(item => item.id !== product.id); // Remove from cart
+                            this.cart = this.cart.filter(item => item.id !== product.id);
                         }
                     }
                 },
