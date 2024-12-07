@@ -25,7 +25,7 @@
                 <div class="searchBox">
                     <p>
                         Search:
-                        <input type="text" class="searchInput" v-model="searchTerm"
+                        <input type="text" class="searchInput" v-model="searchTerm" @input="handleSearchInput"
                             placeholder="Search for a product...">
                     </p>
                 </div>
@@ -187,6 +187,32 @@
                             console.error('Error fetching products:', error);
                         });
                 },
+                handleSearchInput() {
+                    const query = this.searchTerm.trim();
+                    if (!query) {
+                        // If the user cleared the search, refetch all products
+                        this.fetchProducts();
+                    } else {
+                        // If there's a query, call the backend
+                        this.searchBackend(query);
+                    }
+                },
+
+                searchBackend(query) {
+                    fetch(`https://backend-cst3144-cw.onrender.com/search?q=${encodeURIComponent(query)}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! Status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            this.products = data; // Update products with the search results from backend
+                        })
+                        .catch(error => {
+                            console.error('Error searching products:', error);
+                        });
+                },
                 addToCart(product) {
                     const existingItem = this.cart.find(item => item.id === product.id);
 
@@ -306,7 +332,6 @@
                                 });
                         })
                 }
-
             },
             computed: {
                 isFormComplete() {
@@ -347,14 +372,6 @@
                         productsArray.sort((a, b) => a.location.localeCompare(b.location));
                     } else if (this.sortStyle === 'locationZtoA') {
                         productsArray.sort((a, b) => b.location.localeCompare(a.location));
-                    }
-
-                    // Filter products based on search term
-                    if (this.searchTerm) {
-                        productsArray = productsArray.filter(product =>
-                            product.subject.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                            product.location.toLowerCase().includes(this.searchTerm.toLowerCase())
-                        );
                     }
                     return productsArray;
                 }
