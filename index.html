@@ -293,6 +293,7 @@
                         .then(data => {
                             alert('Order submitted successfully!');
                             console.log('Order response:', data);
+                            console.log(orderDetails.items)
 
                             // Now update the inventory in one go using PUT
                             fetch('https://backend-cst3144-cw.onrender.com/inventory', {
