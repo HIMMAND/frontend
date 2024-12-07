@@ -268,35 +268,43 @@
                             alert('Order submitted successfully!');
                             console.log('Order response:', data);
 
-                            // Update availableInventory for products in the frontend
-                            this.cart.forEach(cartItem => {
-                                const product = this.products.find(p => p.id === cartItem.id);
-                                if (product) {
-                                    product.availableInventory -= cartItem.quantity; // Decrease inventory
-                                }
-                            });
+                            // Now update the inventory in one go using PUT
+                            fetch('https://backend-cst3144-cw.onrender.com/inventory', {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ items: orderDetails.items })
+                            })
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error(`HTTP error! Status: ${response.status}`);
+                                    }
+                                    return response.json();
+                                })
+                                .then(inventoryData => {
+                                    console.log('Inventory updated successfully:', inventoryData);
 
-                            // Clear cart and form after successful order submission
-                            this.cart = [];
-                            this.selectedCartItems = [];
-                            this.order = {
-                                firstName: '',
-                                lastName: '',
-                                address: '',
-                                city: '',
-                                phone: '',
-                                state: '',
-                                zip: '',
-                                method: ''
-                            };
+                                    // After inventory is updated, clear the cart and reset the order form
+                                    this.cart = [];
+                                    this.selectedCartItems = [];
+                                    this.order = {
+                                        firstName: '',
+                                        lastName: '',
+                                        address: '',
+                                        city: '',
+                                        phone: '',
+                                        state: '',
+                                        zip: '',
+                                        method: ''
+                                    };
 
-                            // Optionally refetch products from the backend to ensure consistency
-                            this.fetchProducts();
+                                    // Refetch products to ensure the frontend matches updated inventory
+                                    this.fetchProducts();
+                                })
+                                .catch(error => {
+                                    console.error('Error updating inventory:', error);
+                                    // Handle any inventory update errors here
+                                });
                         })
-                        .catch(error => {
-                            console.error('Error submitting order:', error);
-                            alert('There was an error submitting your order. Please try again.');
-                        });
                 }
 
             },
