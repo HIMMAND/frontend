@@ -99,13 +99,21 @@
                     </li>
                 </ul>
 
+                <!-- First Name Field -->
                 <p>
                     <strong>First Name:</strong>
                     <input v-model.trim="order.firstName">
+                    <span v-if="!isFirstNameValid && order.firstName.trim() !== ''" style="color: red;">
+                        First name must only contain letters.
+                    </span>
                 </p>
+                <!-- Last Name Field -->
                 <p>
                     <strong>Last Name:</strong>
-                    <input v-model="order.lastName">
+                    <input v-model.trim="order.lastName">
+                    <span v-if="!isLastNameValid && order.lastName.trim() !== ''" style="color: red;">
+                        Last name must only contain letters.
+                    </span>
                 </p>
                 <p>
                     <strong>Address:</strong><input v-model="order.address">
@@ -121,12 +129,17 @@
                             {{key}}
                         </option>
                     </select>
+                    <!-- Phone Number Field -->
                 <p>
                     <strong>Phone Number:</strong>
-                    <input v-model.number="order.phone" placeholder="Enter phone number" type="text">
+                    <input v-model.trim="order.phone" placeholder="Enter phone number" type="text">
+                    <span v-if="!isPhoneValid && order.phone.trim() !== ''" style="color: red;">
+                        Phone number must only contain numbers.
+                    </span>
                 </p>
                 <p>
-                    <strong>zip/postal</strong><input v-model.number="order.zip">
+                    <strong>zip/postal:</strong>
+                    <input v-model.number="order.zip" placeholder="Enter zip code" type="number">
                 </p>
 
                 <p><input type="radio" id="home" value="Home" v-model="order.method">
@@ -135,6 +148,7 @@
                 <input type="radio" id="business" value="Business" v-model="order.method">
                 <label for="business">business</label></p>
 
+                <!-- Place Order Button -->
                 <button v-on:click="submitForm" :disabled="!isFormComplete">Place Order</button>
 
                 <h2>Order Information</h2>
@@ -242,9 +256,10 @@
                 },
                 submitForm() {
                     if (this.isFormComplete) {
-                        this.postOrder(); // Call the postOrder method to submit order details
+                        // Proceed with submission if form is valid
+                        this.postOrder();
                     } else {
-                        alert('Please complete the form before submitting!');
+                        alert('Please ensure all fields are completed and valid.');
                     }
                 },
                 canAddToCart(product) {
@@ -344,52 +359,47 @@
                 }
             },
             computed: {
+                // Validation for first name
+                isFirstNameValid() {
+                    const namePattern = /^[A-Za-z]+$/; // Only letters
+                    return namePattern.test(this.order.firstName.trim());
+                },
+                // Validation for last name
+                isLastNameValid() {
+                    const namePattern = /^[A-Za-z]+$/; // Only letters
+                    return namePattern.test(this.order.lastName.trim());
+                },
+                // Validation for phone number
+                isPhoneValid() {
+                    const phonePattern = /^[0-9]+$/; // Only numbers
+                    return phonePattern.test(this.order.phone.trim());
+                },
                 isFormComplete() {
-                    const namePattern = /^[A-Za-z]+$/; // Regex to allow only letters
-                    const phonePattern = /^[0-9]+$/;  // Regex to allow only numbers
+                    const namePattern = /^[A-Za-z]+$/; // Regex for letters only
+                    const phonePattern = /^[0-9]+$/;  // Regex for numbers only
 
                     // Validate names and phone
                     const isFirstNameValid = namePattern.test(this.order.firstName.trim());
                     const isLastNameValid = namePattern.test(this.order.lastName.trim());
                     const isPhoneValid = phonePattern.test(this.order.phone.trim());
 
-                    // Ensure all required fields are complete and valid
-                    const isPersonalInfoComplete = this.order.address.trim() !== '' &&
+                    // Validate zip as a number
+                    const isZipValid = typeof this.order.zip === 'number' && this.order.zip > 0;
+
+                    // Ensure all required fields are complete
+                    const isPersonalInfoComplete = isFirstNameValid &&
+                        isLastNameValid &&
+                        isPhoneValid &&
+                        this.order.address.trim() !== '' &&
                         this.order.city.trim() !== '' &&
                         this.order.state !== '' &&
-                        this.order.zip.trim() !== '';
+                        isZipValid;
 
                     // Ensure a shipping method is selected
                     const isShippingOrMethodSelected = this.order.method === 'Home' || this.order.method === 'Business';
 
-                    // Feedback for invalid inputs
-                    if (!isFirstNameValid) {
-                        alert('First name must only contain letters.');
-                        return false;
-                    }
-
-                    if (!isLastNameValid) {
-                        alert('Last name must only contain letters.');
-                        return false;
-                    }
-
-                    if (!isPhoneValid) {
-                        alert('Phone number must only contain numbers.');
-                        return false;
-                    }
-
-                    if (!isPersonalInfoComplete) {
-                        alert('Please complete all required address fields (address, city, state, zip).');
-                        return false;
-                    }
-
-                    if (!isShippingOrMethodSelected) {
-                        alert('Please select a shipping method (Home or Business).');
-                        return false;
-                    }
-
-                    // If all validations pass
-                    return true;
+                    // Return final validation result
+                    return isPersonalInfoComplete && isShippingOrMethodSelected;
                 },
                 cartItems() {
                     return this.cart.map(cartItem => {
