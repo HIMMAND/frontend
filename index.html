@@ -14,12 +14,15 @@
 <body>
     <div id="app">
         <header>
+            <!-- button is being disabled in here-->
             <h1 v-text="sitename"></h1>
             <button v-on:click="togglePage" :disabled="cart.length === 0 && showProduct">
                 {{ showProduct ? `Checkout ${cartItemCount}` : `Products ${cartItemCount}` }}
                 <span class="fas fa-cart-plus"></span>
             </button>
         </header>
+
+        <!-- Main Content Section -->
         <main>
             <div v-if="showProduct" class="search-sort-container">
                 <div class="searchBox">
@@ -59,7 +62,9 @@
                 </div>
             </div>
 
+            <!-- Product Display Section -->
             <div class="card" v-if="showProduct">
+                <!-- Loops through array and displays product list -->
                 <div v-for="product in sortedProducts" class="product-card">
                     <figure>
                         <img v-bind:src="product.image" alt="Product Image" style="height: 30vh;">
@@ -76,15 +81,18 @@
                 </div>
             </div>
 
+            <!-- Checkout Section -->
             <div v-else>
                 <h2>Checkout</h2>
                 <ul class="list">
+                    <!-- loops all products in array -->
                     <li v-for="(product, index) in cartItems" :key="index">
                         <input type="checkbox" v-model="selectedCartItems" :value="product" />
                         <img :src="product.image" alt="Product Image" />
                         <p>{{ product.subject }}</p>
                         <p>Price: {{ product.price }}</p>
                         <p class="location">Location: {{ product.location }}</p>
+                        <!-- Disables button -->
                         <button @click="removeItem(product)" :disabled="selectedCartItems.length === 0">
                             Remove
                         </button>
@@ -166,13 +174,13 @@
                     RAK: 'Ras Al Khaima',
                     UMQ: 'Umm al Quwain'
                 },
-                sortStyle: '', // New property for sorting
-                searchTerm: '', // New property for search
+                sortStyle: '', //  property for sorting
+                searchTerm: '', // property for search
                 selectedCartItems: []
             },
             methods: {
                 fetchProducts() {
-                    // Fetch products from the backend
+                    // Fetch products list from the backend
                     fetch('https://backend-cst3144-cw.onrender.com/products')
                         .then(response => {
                             if (!response.ok) {
@@ -214,6 +222,7 @@
                         });
                 },
                 addToCart(product) {
+                    // checks if the product is in the cart
                     const existingItem = this.cart.find(item => item.id === product.id);
 
                     if (existingItem) {
@@ -336,17 +345,51 @@
             },
             computed: {
                 isFormComplete() {
-                    const isPersonalInfoComplete = this.order.firstName.trim() !== '' &&
-                        this.order.lastName.trim() !== '' &&
-                        this.order.address.trim() !== '' &&
+                    const namePattern = /^[A-Za-z]+$/; // Regex to allow only letters
+                    const phonePattern = /^[0-9]+$/;  // Regex to allow only numbers
+
+                    // Validate names and phone
+                    const isFirstNameValid = namePattern.test(this.order.firstName.trim());
+                    const isLastNameValid = namePattern.test(this.order.lastName.trim());
+                    const isPhoneValid = phonePattern.test(this.order.phone.trim());
+
+                    // Ensure all required fields are complete and valid
+                    const isPersonalInfoComplete = this.order.address.trim() !== '' &&
                         this.order.city.trim() !== '' &&
                         this.order.state !== '' &&
-                        this.order.zip !== '' &&
-                        this.order.phone !== '';
+                        this.order.zip.trim() !== '';
 
+                    // Ensure a shipping method is selected
                     const isShippingOrMethodSelected = this.order.method === 'Home' || this.order.method === 'Business';
 
-                    return isPersonalInfoComplete && isShippingOrMethodSelected;
+                    // Feedback for invalid inputs
+                    if (!isFirstNameValid) {
+                        alert('First name must only contain letters.');
+                        return false;
+                    }
+
+                    if (!isLastNameValid) {
+                        alert('Last name must only contain letters.');
+                        return false;
+                    }
+
+                    if (!isPhoneValid) {
+                        alert('Phone number must only contain numbers.');
+                        return false;
+                    }
+
+                    if (!isPersonalInfoComplete) {
+                        alert('Please complete all required address fields (address, city, state, zip).');
+                        return false;
+                    }
+
+                    if (!isShippingOrMethodSelected) {
+                        alert('Please select a shipping method (Home or Business).');
+                        return false;
+                    }
+
+                    // If all validations pass
+                    return true;
                 },
                 cartItems() {
                     return this.cart.map(cartItem => {
