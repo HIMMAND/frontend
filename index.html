@@ -210,14 +210,19 @@
                         });
                 },
                 handleSearchInput() {
-                    const query = this.searchTerm.trim();
-                    if (!query) {
-                        // If the user cleared the search, refetch all products
-                        this.fetchProducts();
-                    } else {
-                        // If there's a query, call the backend
-                        this.searchBackend(query);
-                    }
+                    // Debounce logic
+                    clearTimeout(this.debounceTimeout); // Clear the previous timeout
+
+                    this.debounceTimeout = setTimeout(() => {
+                        const query = this.searchTerm.trim();
+                        if (!query) {
+                            // If the user cleared the search, refetch all products
+                            this.fetchProducts();
+                        } else {
+                            // If there's a query, call the backend
+                            this.searchBackend(query);
+                        }
+                    }, 300); // Adjust the debounce delay as needed (300ms here)
                 },
 
                 searchBackend(query) {
